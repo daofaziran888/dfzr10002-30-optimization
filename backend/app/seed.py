@@ -581,3 +581,363 @@ SEED_ROWS: dict[str, list[dict[str, Any]]] = {
   '返回行数': '分析操作日志样例3',
   '日志备注': '分析操作日志样例3'}]
 }
+
+
+
+# ---------------------------------------------------------------------------
+# 模型版本 / 部署记录 / 数据集字段版本补充数据
+# ---------------------------------------------------------------------------
+# 通用模块只提供基础行；分析模型需要版本历史、稳定版本与部署记录，
+# 数据集需要字段版本，数据服务需要显示生效模型版本，因此在骨架数据上做一次扩展。
+# 扩展保持纯数据，不放业务规则；规则在 app/services/compatibility.py。
+
+def _version_record(label, fields, params, dataset_version, stable, released_at, note=""):
+    return {
+        "版本": label,
+        "输入字段": list(fields),
+        "参数配置": dict(params),
+        "数据集版本": dataset_version,
+        "稳定": bool(stable),
+        "发布时间": released_at,
+        "说明": note,
+    }
+
+
+MODEL_OVERRIDES = {
+    1: {
+        "模型编号": "MODEL-001",
+        "模型名称": "用户价值评分模型",
+        "模型类型": "分类模型",
+        "输入字段": ["user_id", "amount"],
+        "参数配置": {"threshold": 0.5, "batch_size": 64},
+        "训练数据集": "DATA-0001",
+        "模型版本": "v1",
+        "部署状态": "未部署",
+        "status": "草稿",
+        "pending": True,
+        "abnormal": False,
+        "生效版本": None,
+        "上一稳定版本": "v1",
+        "稳定版本": "v1",
+        "版本历史": [
+            _version_record("v1", ["user_id", "amount"], {"threshold": 0.5, "batch_size": 64}, "DSV-2026-01", True, "2026-09-01", "首版"),
+        ],
+        "部署记录": [],
+        "兼容差异": [],
+        "调用记录": [],
+        "服务调用状态": "未调用",
+        "关联数据服务": [],
+    },
+    2: {
+        "模型编号": "MODEL-002",
+        "模型名称": "用户流失预测模型",
+        "模型类型": "分类模型",
+        "输入字段": ["user_id", "channel", "event_time"],
+        "参数配置": {"threshold": 0.6, "batch_size": 64, "window_days": 30},
+        "训练数据集": "DATA-0002",
+        "模型版本": "v2",
+        "部署状态": "训练中",
+        "status": "训练中",
+        "pending": True,
+        "abnormal": False,
+        "生效版本": "v1",
+        "上一稳定版本": "v1",
+        "稳定版本": "v1",
+        "版本历史": [
+            _version_record("v1", ["user_id", "event_time"], {"threshold": 0.6, "batch_size": 64, "window_days": 30}, "DSV-2026-01", True, "2026-09-03"),
+            _version_record("v2", ["user_id", "channel", "event_time"], {"threshold": 0.6, "batch_size": 64, "window_days": 30}, "DSV-2026-02", False, "2026-11-05", "训练中"),
+        ],
+        "部署记录": [],
+        "兼容差异": [],
+        "调用记录": [],
+        "服务调用状态": "未调用",
+        "关联数据服务": [],
+    },
+    3: {
+        "模型编号": "MODEL-003",
+        "模型名称": "转化概率预测模型",
+        "模型类型": "分类模型",
+        "输入字段": ["user_id", "amount", "channel", "probability"],
+        "参数配置": {"threshold": 0.5, "batch_size": 128},
+        "训练数据集": "DATA-0003",
+        "模型版本": "v3",
+        "部署状态": "已部署",
+        "status": "已部署",
+        "pending": False,
+        "abnormal": False,
+        "生效版本": "v3",
+        "上一稳定版本": "v2",
+        "稳定版本": "v2",
+        "版本历史": [
+            _version_record("v1", ["user_id", "amount"], {"threshold": 0.5, "batch_size": 64}, "DSV-2026-01", True, "2026-09-02", "首版稳定版本"),
+            _version_record("v2", ["user_id", "amount", "channel"], {"threshold": 0.5, "batch_size": 64}, "DSV-2026-02", True, "2026-09-20", "加入渠道字段，验证通过"),
+            _version_record("v3", ["user_id", "amount", "channel", "probability"], {"threshold": 0.5, "batch_size": 128}, "DSV-2026-03", False, "2026-11-05", "加入 probability 字段，观察中"),
+        ],
+        "部署记录": [
+            {"部署编号": "DEP-0001", "版本": "v2", "动作": "部署模型", "结果": "成功", "数据集版本": "DSV-2026-02", "时间": "2026-09-20 10:20", "操作人": "值班管理员"},
+            {"部署编号": "DEP-0002", "版本": "v3", "动作": "部署模型", "结果": "成功", "数据集版本": "DSV-2026-03", "时间": "2026-11-05 14:05", "操作人": "值班管理员"},
+        ],
+        "兼容差异": [],
+        "调用记录": [],
+        "服务调用状态": "正常",
+        "关联数据服务": ["SERV-0003", "SERV-0004"],
+    },
+    4: {
+        "模型编号": "MODEL-004",
+        "模型名称": "高价值客群聚类模型",
+        "模型类型": "聚类模型",
+        "输入字段": ["user_id", "amount", "channel"],
+        "参数配置": {"n_clusters": 5, "batch_size": 128},
+        "训练数据集": "DATA-0001",
+        "模型版本": "v2",
+        "部署状态": "已部署",
+        "status": "已部署",
+        "pending": False,
+        "abnormal": False,
+        "生效版本": "v2",
+        "上一稳定版本": "v2",
+        "稳定版本": "v2",
+        "版本历史": [
+            _version_record("v1", ["user_id", "amount"], {"n_clusters": 4, "batch_size": 128}, "DSV-2026-01", True, "2026-09-06"),
+            _version_record("v2", ["user_id", "amount", "channel"], {"n_clusters": 5, "batch_size": 128}, "DSV-2026-01", True, "2026-10-12", "稳定版本"),
+        ],
+        "部署记录": [
+            {"部署编号": "DEP-0003", "版本": "v2", "动作": "部署模型", "结果": "成功", "数据集版本": "DSV-2026-01", "时间": "2026-10-12 09:45", "操作人": "值班管理员"},
+        ],
+        "兼容差异": [],
+        "调用记录": [],
+        "服务调用状态": "正常",
+        "关联数据服务": ["SERV-0002"],
+    },
+    5: {
+        "模型编号": "MODEL-005",
+        "模型名称": "风险交易识别模型",
+        "模型类型": "分类模型",
+        "输入字段": ["user_id", "amount", "event_time"],
+        "参数配置": {"threshold": 0.8, "batch_size": 32},
+        "训练数据集": "DATA-0002",
+        "模型版本": "v1",
+        "部署状态": "已下线",
+        "status": "已下线",
+        "pending": False,
+        "abnormal": True,
+        "生效版本": None,
+        "上一稳定版本": "v1",
+        "稳定版本": "v1",
+        "版本历史": [
+            _version_record("v1", ["user_id", "amount", "event_time"], {"threshold": 0.8, "batch_size": 32}, "DSV-2026-02", True, "2026-09-10"),
+        ],
+        "部署记录": [
+            {"部署编号": "DEP-0004", "版本": "v1", "动作": "下线模型", "结果": "成功", "数据集版本": "DSV-2026-02", "时间": "2026-10-01 16:30", "操作人": "值班管理员"},
+        ],
+        "兼容差异": [],
+        "调用记录": [],
+        "服务调用状态": "已停用",
+        "关联数据服务": [],
+    },
+    6: {
+        "模型编号": "MODEL-006",
+        "模型名称": "内容推荐排序模型",
+        "模型类型": "排序模型",
+        "输入字段": ["user_id", "amount", "channel"],
+        "参数配置": {"top_k": 10, "batch_size": 256},
+        "训练数据集": "DATA-0001",
+        "模型版本": "v1",
+        "部署状态": "已部署",
+        "status": "已部署",
+        "pending": False,
+        "abnormal": False,
+        "生效版本": "v1",
+        "上一稳定版本": "v1",
+        "稳定版本": "v1",
+        "版本历史": [
+            _version_record("v1", ["user_id", "amount", "channel"], {"top_k": 10, "batch_size": 256}, "DSV-2026-01", True, "2026-10-18"),
+        ],
+        "部署记录": [],
+        "兼容差异": [],
+        "调用记录": [],
+        "服务调用状态": "正常",
+        "关联数据服务": [],
+    },
+    7: {
+        "模型编号": "MODEL-007",
+        "模型名称": "用户生命周期模型",
+        "模型类型": "回归模型",
+        "输入字段": ["user_id", "event_time"],
+        "参数配置": {"threshold": 0.3, "batch_size": 64},
+        "训练数据集": "DATA-0002",
+        "模型版本": "v1",
+        "部署状态": "未部署",
+        "status": "草稿",
+        "pending": True,
+        "abnormal": False,
+        "生效版本": None,
+        "上一稳定版本": None,
+        "稳定版本": None,
+        "版本历史": [
+            _version_record("v1", ["user_id", "event_time"], {"threshold": 0.3, "batch_size": 64}, "DSV-2026-02", False, "2026-11-08", "草稿"),
+        ],
+        "部署记录": [],
+        "兼容差异": [],
+        "调用记录": [],
+        "服务调用状态": "未调用",
+        "关联数据服务": [],
+    },
+    8: {
+        "模型编号": "MODEL-008",
+        "模型名称": "异常行为检测模型",
+        "模型类型": "异常检测模型",
+        "输入字段": ["user_id", "amount", "channel"],
+        "参数配置": {"threshold": 0.95, "batch_size": 64},
+        "训练数据集": "DATA-0003",
+        "模型版本": "v2",
+        "部署状态": "训练中",
+        "status": "训练中",
+        "pending": True,
+        "abnormal": False,
+        "生效版本": "v1",
+        "上一稳定版本": "v1",
+        "稳定版本": "v1",
+        "版本历史": [
+            _version_record("v1", ["user_id", "amount"], {"threshold": 0.95, "batch_size": 64}, "DSV-2026-02", True, "2026-10-20"),
+            _version_record("v2", ["user_id", "amount", "channel"], {"threshold": 0.95, "batch_size": 64}, "DSV-2026-03", False, "2026-11-09"),
+        ],
+        "部署记录": [],
+        "兼容差异": [],
+        "调用记录": [],
+        "服务调用状态": "未调用",
+        "关联数据服务": [],
+    },
+}
+
+for _row in SEED_ROWS["model"]:
+    _extra = MODEL_OVERRIDES.get(int(_row["id"]))
+    if _extra:
+        _row.update(_extra)
+for _model_id in sorted(MODEL_OVERRIDES):
+    if not any(int(_row["id"]) == _model_id for _row in SEED_ROWS["model"]):
+        _row = {"id": _model_id, "pending": True, "abnormal": False}
+        _row.update(MODEL_OVERRIDES[_model_id])
+        SEED_ROWS["model"].append(_row)
+
+
+DATASET_OVERRIDES = {
+    1: {
+        "数据集编号": "DATA-0001",
+        "数据集名称": "用户基础属性数据集",
+        "来源表名": "dwd_user_profile",
+        "字段列表": ["user_id", "amount", "channel", "event_time"],
+        "数据集版本": "DSV-2026-01",
+        "稳定版本": "DSV-2026-01",
+        "最近刷新": "2026-10-18",
+        "是否启用": "是",
+        "status": "已启用",
+        "pending": False,
+        "字段版本历史": [
+            {"版本": "DSV-2026-01", "字段列表": ["user_id", "amount", "channel", "event_time"], "新增字段": [], "移除字段": [], "时间": "2026-09-01"},
+        ],
+    },
+    2: {
+        "数据集编号": "DATA-0002",
+        "数据集名称": "用户行为明细数据集",
+        "来源表名": "dwd_user_event",
+        "字段列表": ["user_id", "amount", "probability", "event_time"],
+        "数据集版本": "DSV-2026-02",
+        "稳定版本": "DSV-2026-02",
+        "最近刷新": "2026-11-05",
+        "是否启用": "是",
+        "status": "已启用",
+        "pending": False,
+        "字段版本历史": [
+            {"版本": "DSV-2026-01", "字段列表": ["user_id", "amount", "event_time"], "新增字段": [], "移除字段": [], "时间": "2026-09-01"},
+            {"版本": "DSV-2026-02", "字段列表": ["user_id", "amount", "probability", "event_time"], "新增字段": ["probability"], "移除字段": [], "时间": "2026-11-05"},
+        ],
+    },
+    3: {
+        "数据集编号": "DATA-0003",
+        "数据集名称": "转化分析宽表数据集",
+        "来源表名": "dws_conversion_wide",
+        "字段列表": ["user_id", "amount", "channel", "probability", "event_time"],
+        "数据集版本": "DSV-2026-03",
+        "稳定版本": "DSV-2026-02",
+        "最近刷新": "2026-11-05",
+        "是否启用": "是",
+        "status": "已启用",
+        "pending": False,
+        "字段版本历史": [
+            {"版本": "DSV-2026-01", "字段列表": ["user_id", "amount", "event_time"], "新增字段": [], "移除字段": [], "时间": "2026-09-01"},
+            {"版本": "DSV-2026-02", "字段列表": ["user_id", "amount", "channel", "event_time"], "新增字段": ["channel"], "移除字段": [], "时间": "2026-09-20"},
+            {"版本": "DSV-2026-03", "字段列表": ["user_id", "amount", "channel", "probability", "event_time"], "新增字段": ["probability"], "移除字段": [], "时间": "2026-11-05"},
+        ],
+    },
+}
+
+for _row in SEED_ROWS["dataset"]:
+    _extra = DATASET_OVERRIDES.get(int(_row["id"]))
+    if _extra:
+        _row.update(_extra)
+
+
+SERVICE_OVERRIDES = {
+    1: {
+        "服务编号": "SERV-0001",
+        "服务名称": "用户画像查询服务",
+        "输出数据集": "DATA-0001",
+        "关联模型": None,
+        "生效模型版本": None,
+        "模型版本记录": [],
+        "服务调用状态": "正常",
+        "调用记录": [],
+    },
+    2: {
+        "服务编号": "SERV-0002",
+        "服务名称": "客群聚类结果服务",
+        "输出数据集": "DATA-0001",
+        "关联模型": "MODEL-004",
+        "生效模型版本": "v2",
+        "模型版本记录": ["v1", "v2"],
+        "服务调用状态": "正常",
+        "调用记录": [],
+    },
+    3: {
+        "服务编号": "SERV-0003",
+        "服务名称": "转化概率查询服务",
+        "输出数据集": "DATA-0003",
+        "关联模型": "MODEL-003",
+        "生效模型版本": "v3",
+        "模型版本记录": ["v1", "v2", "v3"],
+        "服务调用状态": "正常",
+        "调用记录": [],
+    },
+    4: {
+        "服务编号": "SERV-0004",
+        "服务名称": "转化分析报表服务",
+        "输出数据集": "DATA-0003",
+        "关联模型": "MODEL-003",
+        "生效模型版本": "v3",
+        "模型版本记录": ["v1", "v2", "v3"],
+        "服务调用状态": "正常",
+        "调用记录": [],
+    },
+    5: {
+        "服务编号": "SERV-0005",
+        "服务名称": "异常检测查询服务",
+        "输出数据集": "DATA-0003",
+        "关联模型": "MODEL-008",
+        "生效模型版本": "v1",
+        "模型版本记录": ["v1", "v2"],
+        "服务调用状态": "正常",
+        "调用记录": [],
+    },
+}
+
+for _row in SEED_ROWS["service"]:
+    _extra = SERVICE_OVERRIDES.get(int(_row["id"]))
+    if _extra:
+        _row.update(_extra)
+for _service_id in sorted(SERVICE_OVERRIDES):
+    if not any(int(_row["id"]) == _service_id for _row in SEED_ROWS["service"]):
+        _row = {"id": _service_id, "status": "已发布", "pending": False, "abnormal": False}
+        _row.update(SERVICE_OVERRIDES[_service_id])
+        SEED_ROWS["service"].append(_row)
+

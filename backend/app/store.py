@@ -4,6 +4,7 @@
 """
 from __future__ import annotations
 
+import copy
 from typing import Any
 
 from app.seed import SEED_ROWS
@@ -11,9 +12,19 @@ from app.seed import SEED_ROWS
 
 class Store:
     def __init__(self) -> None:
+        # 深拷贝：模型版本历史、部署记录这类嵌套结构会被就地修改，
+        # 不能和 seed 常量共用同一份 list/dict，否则测试之间会互相污染。
         self._tables: dict[str, list[dict[str, Any]]] = {
-            name: [dict(row) for row in rows] for name, rows in SEED_ROWS.items()
+            name: [copy.deepcopy(row) for row in rows] for name, rows in SEED_ROWS.items()
         }
+
+    def snapshot(self) -> dict[str, list[dict[str, Any]]]:
+        """给部署事务留一份完整快照，失败时整体回滚。"""
+        return copy.deepcopy(self._tables)
+
+    def restore(self, snapshot: dict[str, list[dict[str, Any]]]) -> None:
+        """原子回滚：直接替换整张表，避免只回滚了一半的模型/服务记录。"""
+        self._tables = copy.deepcopy(snapshot)
 
     def module_names(self) -> list[str]:
         return sorted(self._tables)
